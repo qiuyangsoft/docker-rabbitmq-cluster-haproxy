@@ -83,5 +83,14 @@ if needed, additional nodes can be added to this file. If the entire cluster com
 
 and connection host should look like this: `haproxyid:5672`
 
+Set the mirror queue policy.
+
+Execute the following command on any node
+
+[source]
+----
+rabbitmqctl set_policy ha-all "^" '{"ha-mode":"all"}'
+----
+
 
     
