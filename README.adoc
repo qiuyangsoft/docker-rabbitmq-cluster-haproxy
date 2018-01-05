@@ -27,12 +27,13 @@ By default 3 nodes are started up this way:
 rabbit1:
   image: bijukunjummen/rabbitmq-server:3.7.0
   hostname: rabbit1
-  ports:
-    - "5672:5672"
-    - "15672:15672"
+  expose:
+        - 5672
+        - 15672
   environment:
     - RABBITMQ_DEFAULT_USER=myuser
     - RABBITMQ_DEFAULT_PASS=mypass
+    
 rabbit2:
   image: bijukunjummen/rabbitmq-server:3.7.0
   hostname: rabbit2
@@ -42,9 +43,9 @@ rabbit2:
    - CLUSTERED=true
    - CLUSTER_WITH=rabbit1
    - RAM_NODE=true
-  ports:
-      - "5673:5672"
-      - "15673:15672"
+  expose:
+        - 5672
+        - 15672
 
 rabbit3:
   image: bijukunjummen/rabbitmq-server:3.7.0
@@ -54,14 +55,33 @@ rabbit3:
     - rabbit2
   environment: 
    - CLUSTERED=true
-   - CLUSTER_WITH=rabbit1   
-  ports:
-        - "5674:5672"  
+   - CLUSTER_WITH=rabbit1
+  expose:
+        - 5672
+        - 15672
+        
+haproxy:
+    image: haproxy:latest
+    volumes:
+        - ./haproxy:/haproxy-override
+        - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    links:
+        - rabbit1
+        - rabbit2
+        - rabbit3
+    ports:
+        - "15672:15672"
+        - "5672:5672"
+        - "70:70"
+    expose:
+        - "15672"
+        - "5672"
+        - "70"
 ----
 
-if needed, additional nodes can be added to this file. If the entire cluster comes up, the management console can be accessed at http://<dockerip>:15672
+if needed, additional nodes can be added to this file. If the entire cluster comes up, the management console can be accessed at http://<haproxyid>:15672
 
-and connection host should look like this: `dockerip:5672,dockerip:5673,dockerip:5674`
+and connection host should look like this: `haproxyid:5672`
 
 
     
